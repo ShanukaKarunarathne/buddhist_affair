@@ -1,0 +1,294 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-4a8b-9c1d-0e1f2a3b4c5d",
+		"name": "Bhikku Registry API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ua_username\": \"dataentry\",\n    \"ua_password\": \"dataentrypassword\",\n    \"ua_email\": \"dataentry@temple.lk\",\n    \"ua_full_name\": \"Chaminda Weerasinghe\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful login\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.session_id) {",
+									"    pm.collectionVariables.set(\"sessionId\", response.session_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ua_username\": \"clerk01\",\n    \"ua_password\": \"hash_clerk_password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/logout?session_id={{sessionId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							],
+							"query": [
+								{
+									"key": "session_id",
+									"value": "{{sessionId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bhikku Management",
+			"item": [
+				{
+					"name": "CREATE Bhikku",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"action\": \"CREATE\",\n  \"payload\": {\n    \"data\": {\n      \"br_regn\": \"MICROM-TEST-01\",\n      \"br_reqstdate\": \"2025-10-05\",\n      \"br_gndiv\": \"GN005\",\n      \"br_currstat\": \"ST01\",\n      \"br_parshawaya\": \"PR001\",\n      \"br_livtemple\": \"TRN0000001\",\n      \"br_mahanatemple\": \"TRN0000002\",\n      \"br_mahanaacharyacd\": \"BH2025000005\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"bhikkus",
+								"manage"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "READ ONE Bhikku",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"READ_ONE\",\n    \"payload\": {\n        \"br_regn\": \"MICROM-TEST-01\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"bhikkus",
+								"manage"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "READ ALL Bhikkus",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"READ_ALL\",\n    \"payload\": {\n        \"skip\": 0,\n        \"limit\": 5\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"bhikkus",
+								"manage"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UPDATE Bhikku",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"UPDATE\",\n    \"payload\": {\n        \"br_regn\": \"MICROM-TEST-01\",\n        \"data\": {\n            \"br_remarks\": \"This record was updated via the single management endpoint.\",\n            \"br_mobile\": \"0771234567\"\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"bhikkus",
+								"manage"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE Bhikku",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"DELETE\",\n    \"payload\": {\n        \"br_regn\": \"MICROM-TEST-01\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"bhikkus",
+								"manage"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/health",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"health"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8000"
+		},
+		{
+			"key": "sessionId",
+			"value": ""
+		}
+	]
+}
