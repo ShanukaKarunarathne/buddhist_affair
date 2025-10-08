@@ -1,55 +1,86 @@
 {
 	"info": {
 		"_postman_id": "a1b2c3d4-e5f6-4a8b-9c1d-0e1f2a3b4c5d",
-		"name": "Bhikku Registry API",
+		"name": "Bhikku Registry API - Complete Auth Flow with Roles",
+		"description": "Complete API testing with user authentication and role management. Follow the order: 1) Health Check 2) Get Roles 3) Register User 4) Login 5) Use Bhikku endpoints with auth 6) Logout",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Authentication",
+			"name": "1. Health Check",
 			"item": [
 				{
-					"name": "Register User",
+					"name": "Health Check",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"ua_username\": \"dataentry\",\n    \"ua_password\": \"dataentrypassword\",\n    \"ua_email\": \"dataentry@temple.lk\",\n    \"ua_full_name\": \"Chaminda Weerasinghe\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/auth/register",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"register"
-							]
+							"raw": "{{baseUrl}}/api/v1/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "health"]
 						}
-					},
-					"response": []
-				},
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Get Available Roles",
+			"item": [
 				{
-					"name": "Login",
+					"name": "Get All Roles",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Successful login\", function () {",
+									"pm.test(\"Roles retrieved successfully\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
+									"",
 									"const response = pm.response.json();",
-									"if (response.session_id) {",
-									"    pm.collectionVariables.set(\"sessionId\", response.session_id);",
+									"if (response.roles && response.roles.length > 0) {",
+									"    console.log(\"Available Roles:\");",
+									"    response.roles.forEach(role => {",
+									"        console.log(`   ${role.ro_role_id}: ${role.ro_role_name} - ${role.ro_description}`);",
+									"    });",
+									"    pm.collectionVariables.set(\"testRoleId\", response.roles[2].ro_role_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/roles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "roles"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. User Registration",
+			"item": [
+				{
+					"name": "Register Data Entry Clerk",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"User registered successfully\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const response = pm.response.json();",
+									"if (response && response.ua_user_id) {",
+									"    pm.collectionVariables.set(\"userId\", response.ua_user_id);",
+									"    console.log(\"User ID saved: \" + response.ua_user_id);",
+									"    console.log(\"Role: \" + response.ro_role_id);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -58,47 +89,475 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"ua_username\": \"clerk01\",\n    \"ua_password\": \"hash_clerk_password\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
+							"raw": "{\n    \"ua_username\": \"dataentry\",\n    \"ua_password\": \"dataentry123\",\n    \"ua_email\": \"dataentry@temple.lk\",\n    \"ua_first_name\": \"Chaminda\",\n    \"ua_last_name\": \"Weerasinghe\",\n    \"ua_phone\": \"0771234567\",\n    \"ro_role_id\": \"ROLE00003\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register System Administrator",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
 							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ua_username\": \"admin\",\n    \"ua_password\": \"admin123\",\n    \"ua_email\": \"admin@temple.lk\",\n    \"ua_first_name\": \"System\",\n    \"ua_last_name\": \"Administrator\",\n    \"ua_phone\": \"0112345678\",\n    \"ro_role_id\": \"ROLE00001\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register Temple Officer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ua_username\": \"templeofficer\",\n    \"ua_password\": \"temple123\",\n    \"ua_email\": \"temple@temple.lk\",\n    \"ua_first_name\": \"Sunil\",\n    \"ua_last_name\": \"Bandara\",\n    \"ua_phone\": \"0775551234\",\n    \"ro_role_id\": \"ROLE00005\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register with Invalid Role (Should Fail)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ua_username\": \"invaliduser\",\n    \"ua_password\": \"password123\",\n    \"ua_email\": \"invalid@temple.lk\",\n    \"ua_first_name\": \"Invalid\",\n    \"ua_last_name\": \"User\",\n    \"ro_role_id\": \"ROLE99999\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "register"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. User Login",
+			"item": [
+				{
+					"name": "Login as Data Entry Clerk",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Login successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const response = pm.response.json();",
+									"if (response.session_id) {",
+									"    pm.collectionVariables.set(\"sessionId\", response.session_id);",
+									"    console.log(\"Session ID saved: \" + response.session_id);",
+									"    console.log(\"Logged in as: \" + response.user.ua_username);",
+									"    console.log(\"Role: \" + response.user.role.ro_role_name);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ua_username\": \"dataentry\",\n    \"ua_password\": \"dataentry123\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"login"
-							]
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "login"]
 						}
-					},
-					"response": []
+					}
 				},
 				{
-					"name": "Logout",
+					"name": "Login as Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Login successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const response = pm.response.json();",
+									"if (response.session_id) {",
+									"    pm.collectionVariables.set(\"sessionId\", response.session_id);",
+									"    console.log(\"Session ID saved: \" + response.session_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ua_username\": \"admin\",\n    \"ua_password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login as Temple Officer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ua_username\": \"templeofficer\",\n    \"ua_password\": \"temple123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login with Wrong Password (Should Fail)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ua_username\": \"dataentry\",\n    \"ua_password\": \"wrongpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Bhikku Management (Authenticated)",
+			"item": [
+				{
+					"name": "CREATE Bhikku (Auth Required)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Bhikku created successfully\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const response = pm.response.json();",
+									"if (response.data && response.data.br_regn) {",
+									"    pm.collectionVariables.set(\"bhikkuRegn\", response.data.br_regn);",
+									"    console.log(\"Bhikku Registration: \" + response.data.br_regn);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{sessionId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"action\": \"CREATE\",\n  \"payload\": {\n    \"data\": {\n      \"br_regn\": \"MICROM-TEST-01\",\n      \"br_reqstdate\": \"2025-10-05\",\n      \"br_gndiv\": \"GN005\",\n      \"br_currstat\": \"ST01\",\n      \"br_parshawaya\": \"PR001\",\n      \"br_livtemple\": \"TRN0000001\",\n      \"br_mahanatemple\": \"TRN0000002\",\n      \"br_mahanaacharyacd\": \"BH2025000005\",\n      \"br_vilage\": \"Colombo\",\n      \"br_gihiname\": \"Sumith Silva\",\n      \"br_dofb\": \"1990-05-15\",\n      \"br_mobile\": \"0771234567\",\n      \"br_email\": \"bhikku01@temple.lk\"\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bhikkus", "manage"]
+						}
+					}
+				},
+				{
+					"name": "CREATE Bhikku - Example 2 (Auth Required)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{sessionId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"action\": \"CREATE\",\n  \"payload\": {\n    \"data\": {\n      \"br_regn\": \"MICROM-TEST-02\",\n      \"br_reqstdate\": \"2025-10-06\",\n      \"br_gndiv\": \"GN006\",\n      \"br_currstat\": \"ST01\",\n      \"br_parshawaya\": \"PR001\",\n      \"br_livtemple\": \"TRN0000003\",\n      \"br_mahanatemple\": \"TRN0000004\",\n      \"br_mahanaacharyacd\": \"BH2025000006\",\n      \"br_vilage\": \"Kandy\",\n      \"br_gihiname\": \"Kamal Perera\",\n      \"br_dofb\": \"1985-08-20\",\n      \"br_mobile\": \"0777654321\",\n      \"br_email\": \"bhikku02@temple.lk\",\n      \"br_remarks\": \"New registration\"\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bhikkus", "manage"]
+						}
+					}
+				},
+				{
+					"name": "READ ONE Bhikku (Auth Required)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{sessionId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"READ_ONE\",\n    \"payload\": {\n        \"br_regn\": \"{{bhikkuRegn}}\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bhikkus", "manage"]
+						}
+					}
+				},
+				{
+					"name": "READ ALL Bhikkus (Auth Required)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{sessionId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"READ_ALL\",\n    \"payload\": {\n        \"skip\": 0,\n        \"limit\": 10\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bhikkus", "manage"]
+						}
+					}
+				},
+				{
+					"name": "UPDATE Bhikku (Auth Required)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{sessionId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"UPDATE\",\n    \"payload\": {\n        \"br_regn\": \"MICROM-TEST-01\",\n        \"data\": {\n            \"br_remarks\": \"Updated via authenticated API call\",\n            \"br_mobile\": \"0771234999\",\n            \"br_email\": \"updated_bhikku@temple.lk\"\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bhikkus", "manage"]
+						}
+					}
+				},
+				{
+					"name": "DELETE Bhikku (Auth Required)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{sessionId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"DELETE\",\n    \"payload\": {\n        \"br_regn\": \"MICROM-TEST-02\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bhikkus", "manage"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Test Without Auth (Should Fail)",
+			"item": [
+				{
+					"name": "Try CREATE without Auth (401 Expected)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"action\": \"CREATE\",\n  \"payload\": {\n    \"data\": {\n      \"br_regn\": \"SHOULD-FAIL\",\n      \"br_reqstdate\": \"2025-10-05\",\n      \"br_gndiv\": \"GN005\",\n      \"br_currstat\": \"ST01\",\n      \"br_parshawaya\": \"PR001\",\n      \"br_livtemple\": \"TRN0000001\",\n      \"br_mahanatemple\": \"TRN0000002\",\n      \"br_mahanaacharyacd\": \"BH2025000005\"\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bhikkus", "manage"]
+						}
+					}
+				},
+				{
+					"name": "Try READ with Invalid Token (401 Expected)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer INVALID_SESSION_TOKEN_123",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"READ_ALL\",\n    \"payload\": {\n        \"skip\": 0,\n        \"limit\": 10\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bhikkus", "manage"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Logout",
+			"item": [
+				{
+					"name": "Logout Current Session",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Logout successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"console.log(\"Logged out successfully\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/logout?session_id={{sessionId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"logout"
-							],
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "logout"],
 							"query": [
 								{
 									"key": "session_id",
@@ -106,189 +565,101 @@
 								}
 							]
 						}
-					},
-					"response": []
+					}
+				},
+				{
+					"name": "Try Using Bhikku API After Logout (401 Expected)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{sessionId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"READ_ALL\",\n    \"payload\": {\n        \"skip\": 0,\n        \"limit\": 10\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bhikkus", "manage"]
+						}
+					}
 				}
 			]
 		},
 		{
-			"name": "Bhikku Management",
+			"name": "8. Role-Based Testing",
 			"item": [
 				{
-					"name": "CREATE Bhikku",
+					"name": "Get Role Information After Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.expect(response.user).to.have.property('role');",
+									"console.log(\"Current Role: \" + response.user.role.ro_role_name);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"action\": \"CREATE\",\n  \"payload\": {\n    \"data\": {\n      \"br_regn\": \"MICROM-TEST-01\",\n      \"br_reqstdate\": \"2025-10-05\",\n      \"br_gndiv\": \"GN005\",\n      \"br_currstat\": \"ST01\",\n      \"br_parshawaya\": \"PR001\",\n      \"br_livtemple\": \"TRN0000001\",\n      \"br_mahanatemple\": \"TRN0000002\",\n      \"br_mahanaacharyacd\": \"BH2025000005\"\n    }\n  }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"ua_username\": \"dataentry\",\n    \"ua_password\": \"dataentry123\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"bhikkus",
-								"manage"
-							]
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "login"]
 						}
-					},
-					"response": []
-				},
-				{
-					"name": "READ ONE Bhikku",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"action\": \"READ_ONE\",\n    \"payload\": {\n        \"br_regn\": \"MICROM-TEST-01\"\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"bhikkus",
-								"manage"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "READ ALL Bhikkus",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"action\": \"READ_ALL\",\n    \"payload\": {\n        \"skip\": 0,\n        \"limit\": 5\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"bhikkus",
-								"manage"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "UPDATE Bhikku",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"action\": \"UPDATE\",\n    \"payload\": {\n        \"br_regn\": \"MICROM-TEST-01\",\n        \"data\": {\n            \"br_remarks\": \"This record was updated via the single management endpoint.\",\n            \"br_mobile\": \"0771234567\"\n        }\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"bhikkus",
-								"manage"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "DELETE Bhikku",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"action\": \"DELETE\",\n    \"payload\": {\n        \"br_regn\": \"MICROM-TEST-01\"\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/bhikkus/manage",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"bhikkus",
-								"manage"
-							]
-						}
-					},
-					"response": []
+					}
 				}
 			]
-		},
-		{
-			"name": "Health Check",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/health",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"health"
-					]
-				}
-			},
-			"response": []
 		}
 	],
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "http://127.0.0.1:8000"
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
 		},
 		{
 			"key": "sessionId",
-			"value": ""
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "testRoleId",
+			"value": "ROLE00003",
+			"type": "string"
+		},
+		{
+			"key": "bhikkuRegn",
+			"value": "",
+			"type": "string"
 		}
 	]
 }
