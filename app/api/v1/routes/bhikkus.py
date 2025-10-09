@@ -56,8 +56,8 @@ def manage_bhikku_records(
         if not payload.br_regn or not payload.data or not isinstance(payload.data, schemas.BhikkuUpdate):
             raise HTTPException(status_code=400, detail="br_regn and data are required for UPDATE action")
 
-        # Set the updated_by field to current user
-        payload.data.br_updated_by = username
+        # Set the updated_by field to current user ID (FIXED: was using undefined 'username')
+        payload.data.br_updated_by = user_id
         updated_bhikku = bhikku_repo.update(db=db, br_regn=payload.br_regn, bhikku_update=payload.data)
         if updated_bhikku is None:
             raise HTTPException(status_code=404, detail="Bhikku not found")
